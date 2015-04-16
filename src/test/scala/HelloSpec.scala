@@ -8,7 +8,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest._
 import org.scalatest.matchers.ShouldMatchers
 import parquet.hadoop.ParquetInputFormat
-import parquet.proto.{ProtoMessageParquetInputFormat, SettableProtoReadSupport}
+import parquet.proto.{ProtoParquetRDD, ProtoMessageParquetInputFormat, SettableProtoReadSupport}
 import parquet.proto.utils.ReadUsingMR
 
 class HelloSpec extends FlatSpec with ShouldMatchers {
@@ -44,13 +44,10 @@ class HelloSpec extends FlatSpec with ShouldMatchers {
 
     personsDF.save("persons.parquet", SaveMode.Overwrite)
 
-    val jconf = new JobConf(sc.hadoopConfiguration)
-    FileInputFormat.setInputPaths(jconf, "persons.parquet")
-    ParquetInputFormat.setReadSupportClass(jconf, classOf[SettableProtoReadSupport[Person]])
-    SettableProtoReadSupport.setProtoClass(jconf, "com.example.test.Example.Person")
-    val personsPB = new NewHadoopRDD(sc, classOf[ProtoMessageParquetInputFormat[Person, Person.Builder]], classOf[Void], classOf[Person], jconf)
+    val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person])
 
-    personsPB.map(_._2).collect().foreach(println)
-    personsPB.collect()(0)._2 should be === Person.newBuilder().setEmail("bob@gmail.com").setId(1).setName("Bob").build
+    personsPB.collect().foreach(println)
+    personsPB.collect()(0) should be === Person.newBuilder().setEmail("bob@gmail.com").setId(1).setName("Bob").build
+
   }
 }

@@ -4,16 +4,16 @@ import com.google.protobuf.GeneratedMessage
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
 import parquet.hadoop.ParquetRecordReader
 
-class ProtoMessageParquetInputFormat[T <: GeneratedMessage, B <: GeneratedMessage.Builder[B]] extends ProtoParquetInputFormat[T] {
+class ProtoMessageParquetInputFormat[T <: GeneratedMessage] extends ProtoParquetInputFormat[T] {
 
   override def createRecordReader(inputSplit: InputSplit, taskAttemptContext: TaskAttemptContext) : RecordReader[Void, T] = {
-    val reader = super.createRecordReader(inputSplit, taskAttemptContext).asInstanceOf[ParquetRecordReader[B]]
+    val reader = super.createRecordReader(inputSplit, taskAttemptContext).asInstanceOf[ParquetRecordReader[_ <: GeneratedMessage.Builder[_]]]
 
     new MessageRecordReader(reader)
   }
 }
 
-class MessageRecordReader[T <: GeneratedMessage, B <: GeneratedMessage.Builder[B]](reader: ParquetRecordReader[B]) extends RecordReader[Void, T] {
+class MessageRecordReader[T <: GeneratedMessage](reader: ParquetRecordReader[_ <: GeneratedMessage.Builder[_]]) extends RecordReader[Void, T] {
   override def initialize(split: InputSplit, context: TaskAttemptContext): Unit = reader.initialize(split, context)
 
   override def getProgress: Float = reader.getProgress

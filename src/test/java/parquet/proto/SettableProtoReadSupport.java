@@ -19,69 +19,30 @@
 package parquet.proto;
 
 import com.google.protobuf.Message;
-import com.twitter.elephantbird.util.Protobufs;
 import org.apache.hadoop.conf.Configuration;
-import parquet.Log;
-import parquet.hadoop.api.InitContext;
-import parquet.hadoop.api.ReadSupport;
 import parquet.io.api.RecordMaterializer;
 import parquet.schema.MessageType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
 /**
  * @author Lukas Nalezenec
  */
-public class SettableProtoReadSupport<T extends Message> extends ReadSupport<T> {
-
-    private static final Log LOG = Log.getLog(SettableProtoReadSupport.class);
-
-    public static final String PB_REQUESTED_PROJECTION = "parquet.proto.projection";
-
-    public static final String PB_CLASS = "parquet.proto.class";
-    public static final String PB_DESCRIPTOR = "parquet.proto.descriptor";
-
-    public static void setRequestedProjection(Configuration configuration, String requestedProjection) {
-        configuration.set(PB_REQUESTED_PROJECTION, requestedProjection);
-    }
+public class SettableProtoReadSupport<T extends Message> extends ProtoReadSupport<T> {
 
     public static void setProtoClass(Configuration configuration, String strProtoClass) {
         configuration.set(PB_CLASS, strProtoClass);
     }
 
     @Override
-    public ReadContext init(InitContext context) {
-        String requestedProjectionString = context.getConfiguration().get(PB_REQUESTED_PROJECTION);
-
-        if (requestedProjectionString != null && !requestedProjectionString.trim().isEmpty()) {
-            MessageType requestedProjection = getSchemaForRead(context.getFileSchema(), requestedProjectionString);
-            LOG.debug("Reading data with projection " + requestedProjection);
-            return new ReadContext(requestedProjection);
-        } else {
-            MessageType fileSchema = context.getFileSchema();
-            LOG.debug("Reading data with schema " + fileSchema);
-            return new ReadContext(fileSchema);
-        }
-    }
-
-    @Override
     public RecordMaterializer<T> prepareForRead(Configuration configuration, Map<String, String> keyValueMetaData, MessageType fileSchema, ReadContext readContext) {
-        String strProtoClass = keyValueMetaData.get(PB_CLASS);
-        if (strProtoClass == null) {
-            configuration.get(PB_CLASS);
+        Map<String, String> keyValueMetaDataClone = new HashMap<String, String>(keyValueMetaData);
+        if(!keyValueMetaDataClone.containsKey(PB_CLASS)) {
+            keyValueMetaDataClone.put(PB_CLASS, configuration.get(PB_CLASS));
         }
 
-        if (strProtoClass == null) {
-            throw new RuntimeException("I Need parameter " + PB_CLASS + " with Protocol Buffer class");
-        }
-
-        LOG.debug("Reading data with Protocol Buffer class" + strProtoClass);
-
-        MessageType requestedSchema = readContext.getRequestedSchema();
-        Class<? extends Message> protobufClass = Protobufs.getProtobufClass(strProtoClass);
-        return new ProtoRecordMaterializer(requestedSchema, protobufClass);
+        return super.prepareForRead(configuration, keyValueMetaDataClone, fileSchema, readContext);
     }
-
-
 }
