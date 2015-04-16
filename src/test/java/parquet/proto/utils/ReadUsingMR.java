@@ -27,9 +27,9 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
-import org.apache.spark.sql.parquet.RowReadSupport;
 import parquet.Log;
 import parquet.proto.ProtoParquetInputFormat;
+import parquet.proto.ProtoReadSupport;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class ReadUsingMR {
             final Job job = new Job(conf, "read");
             job.setInputFormatClass(ProtoParquetInputFormat.class);
             ProtoParquetInputFormat.setInputPaths(job, parquetPath);
-            ProtoParquetInputFormat.setReadSupportClass(job, RowReadSupport.class);
+            ProtoParquetInputFormat.setReadSupportClass(job, ProtoReadSupport.class);
             if (projection != null) {
                 ProtoParquetInputFormat.setRequestedProjection(job, projection);
             }

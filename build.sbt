@@ -8,6 +8,10 @@ version := "1.0"
 
 scalaVersion := "2.10.5"
 
+resolvers ++= Seq(
+  "Twitter Maven" at "http://maven.twttr.com"
+)
+
 // Change this to another test framework if you prefer
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "1.3.0",

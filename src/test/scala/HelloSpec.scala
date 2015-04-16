@@ -1,10 +1,10 @@
+import com.example.test.Example.Person
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.{SaveMode, SQLContext, Row}
-import org.apache.spark.sql.types.{StructType, IntegerType, StructField, StringType}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest._
 import org.scalatest.matchers.ShouldMatchers
-import parquet.hadoop.ParquetInputFormat
 import parquet.proto.utils.ReadUsingMR
 
 class HelloSpec extends FlatSpec with ShouldMatchers {
@@ -34,22 +34,15 @@ class HelloSpec extends FlatSpec with ShouldMatchers {
 
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
-    personsDF.agg(Map("id"->"max")).printSchema()
+    personsDF.agg(Map("id"->"max")).collect() should be === Array(Row(2))
 
-    println(personsDF.rdd.map(_.getString(0)).collect.toList)
-//
-//    personsDF.save("org.apache.spark.sql.parquet",
-//      SaveMode.Overwrite,
-//      Map(
-//        "path" -> "persons.parquet",
-//        "parquet.proto.class" -> "com.example.test.Example.Person"
-//      )
-//    )
-//
-//    val reader = new ReadUsingMR
-//    val persons = reader.read(new Path("persons.parquet"))
-//
+    personsDF.rdd.map(_.getString(0)).collect.toList should be === List("Bob", "Alice")
 
-    true should be === true
+    personsDF.save("persons.parquet", SaveMode.Overwrite)
+
+    val reader = new ReadUsingMR
+    val persons = reader.read(new Path("persons.parquet"))
+
+    persons.get(0) should be === Person.newBuilder().setEmail("bob@gmail.com").setId(1).setName("Bob").build()
   }
 }
