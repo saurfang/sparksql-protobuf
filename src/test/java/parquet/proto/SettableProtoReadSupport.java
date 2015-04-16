@@ -33,9 +33,9 @@ import java.util.Map;
 /**
  * @author Lukas Nalezenec
  */
-public class ProtoReadSupport<T extends Message> extends ReadSupport<T> {
+public class SettableProtoReadSupport<T extends Message> extends ReadSupport<T> {
 
-    private static final Log LOG = Log.getLog(ProtoReadSupport.class);
+    private static final Log LOG = Log.getLog(SettableProtoReadSupport.class);
 
     public static final String PB_REQUESTED_PROJECTION = "parquet.proto.projection";
 
@@ -44,6 +44,10 @@ public class ProtoReadSupport<T extends Message> extends ReadSupport<T> {
 
     public static void setRequestedProjection(Configuration configuration, String requestedProjection) {
         configuration.set(PB_REQUESTED_PROJECTION, requestedProjection);
+    }
+
+    public static void setProtoClass(Configuration configuration, String strProtoClass) {
+        configuration.set(PB_CLASS, strProtoClass);
     }
 
     @Override
@@ -63,10 +67,13 @@ public class ProtoReadSupport<T extends Message> extends ReadSupport<T> {
 
     @Override
     public RecordMaterializer<T> prepareForRead(Configuration configuration, Map<String, String> keyValueMetaData, MessageType fileSchema, ReadContext readContext) {
-        String strProtoClass = "com.example.test.Example.Person"; // keyValueMetaData.get(PB_CLASS);
+        String strProtoClass = keyValueMetaData.get(PB_CLASS);
+        if (strProtoClass == null) {
+            configuration.get(PB_CLASS);
+        }
 
         if (strProtoClass == null) {
-            throw new RuntimeException("X Need parameter " + PB_CLASS + " with Protocol Buffer class");
+            throw new RuntimeException("I Need parameter " + PB_CLASS + " with Protocol Buffer class");
         }
 
         LOG.debug("Reading data with Protocol Buffer class" + strProtoClass);
