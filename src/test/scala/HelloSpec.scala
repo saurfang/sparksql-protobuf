@@ -1,5 +1,5 @@
 import com.example.test.Example.Person
-import com.example.test.Example.Person.{PhoneNumber, PhoneNumberInner, PhoneNumberOuter}
+import com.example.test.Example.Person.{PhoneType, PhoneNumber, PhoneNumberInner, PhoneNumberOuter}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -18,7 +18,9 @@ class HelloSpec extends FlatSpec with Matchers {
 
     val rawPersons = sc.parallelize(
       Seq(
-        Row("Bob", 1, "bob@gmail.com", Seq(Row("1234", "HOME"), Row("2345", "CELL"))),
+        Row("Bob", 1, "bob@gmail.com",
+          Seq(Row("1234", PhoneType.HOME.toString), Row("2345", PhoneType.MOBILE.toString))
+        ),
         Row("Alice", 2, "alice@outlook.com", Seq())
       )
     )
@@ -64,7 +66,7 @@ class HelloSpec extends FlatSpec with Matchers {
               .setArray(
                 PhoneNumber.newBuilder()
                   .setNumber("1234")
-                  .setType("HOME")
+                  .setType(PhoneType.HOME)
               )
           )
           .addBag(
@@ -72,7 +74,7 @@ class HelloSpec extends FlatSpec with Matchers {
               .setArray(
                 PhoneNumber.newBuilder()
                   .setNumber("2345")
-                  .setType("CELL")
+                  .setType(PhoneType.MOBILE)
               )
           )
       )
