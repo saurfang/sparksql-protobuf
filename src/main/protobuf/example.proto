@@ -13,8 +13,17 @@ message Person {
 
   message PhoneNumber {
     required string number = 1;
-    optional PhoneType type = 2 [default = HOME];
+    //optional PhoneType type = 2 [default = HOME];
+    optional string type = 2;
   }
 
-  //repeated PhoneNumber phone = 4;
+  message PhoneNumberInner {
+    optional PhoneNumber array = 1;
+  }
+
+  message PhoneNumberOuter {
+    repeated PhoneNumberInner bag = 1;
+  }
+
+  optional PhoneNumberOuter phone = 4;
 }

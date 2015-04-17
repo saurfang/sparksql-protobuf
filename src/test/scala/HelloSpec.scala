@@ -1,17 +1,13 @@
 import com.example.test.Example.Person
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
-import org.apache.spark.rdd.NewHadoopRDD
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import com.example.test.Example.Person.{PhoneNumber, PhoneNumberInner, PhoneNumberOuter}
+import com.google.common.primitives.Bytes
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
-import parquet.hadoop.ParquetInputFormat
-import parquet.proto.{ProtoParquetRDD, ProtoMessageParquetInputFormat, SettableProtoReadSupport}
-import parquet.proto.utils.ReadUsingMR
+import parquet.spark.ProtoParquetRDD
 
-class HelloSpec extends FlatSpec with ShouldMatchers {
+class HelloSpec extends FlatSpec with Matchers {
   "Hello" should "have tests" in {
     val sc = new SparkContext(
       new SparkConf()
@@ -23,18 +19,29 @@ class HelloSpec extends FlatSpec with ShouldMatchers {
 
     val rawPersons = sc.parallelize(
       Seq(
-        Row("Bob", 1, "bob@gmail.com"),
-        Row("Alice", 2, "alice@outlook.com")
+        Row("Bob", 1, "bob@gmail.com", Seq(Row("1234", "HOME"), Row("2345", "CELL"))),
+        Row("Alice", 2, "alice@outlook.com", Seq())
       )
     )
 
     val personSchema = StructType(
       Seq(
-        StructField("name", StringType, nullable = true),
-        StructField("id", IntegerType, nullable = true),
-        StructField("email", StringType, nullable = true)
+        StructField("name", StringType),
+        StructField("id", IntegerType),
+        StructField("email", StringType),
+        StructField("phone",
+          ArrayType(
+            StructType(
+              Seq(
+                StructField("number", StringType),
+                StructField("type", StringType)
+              )
+            )
+          )
+        )
       )
     )
+
 
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
@@ -47,7 +54,30 @@ class HelloSpec extends FlatSpec with ShouldMatchers {
     val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person])
 
     personsPB.collect().foreach(println)
-    personsPB.collect()(0) should be === Person.newBuilder().setEmail("bob@gmail.com").setId(1).setName("Bob").build
+    personsPB.collect()(0) should be === Person.newBuilder()
+      .setEmail("bob@gmail.com")
+      .setId(1)
+      .setName("Bob")
+      .setPhone(
+        PhoneNumberOuter.newBuilder()
+          .addBag(
+            PhoneNumberInner.newBuilder()
+              .setArray(
+                PhoneNumber.newBuilder()
+                  .setNumber("1234")
+                  .setType("HOME")
+              )
+          )
+          .addBag(
+            PhoneNumberInner.newBuilder()
+              .setArray(
+                PhoneNumber.newBuilder()
+                  .setNumber("2345")
+                  .setType("CELL")
+              )
+          )
+      )
+      .build
 
   }
 }

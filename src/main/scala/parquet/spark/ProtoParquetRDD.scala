@@ -1,4 +1,4 @@
-package parquet.proto
+package parquet.spark
 
 import com.google.protobuf.AbstractMessage
 import org.apache.hadoop.conf.Configuration
@@ -7,6 +7,7 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.{NewHadoopRDD, RDD}
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 import parquet.hadoop.ParquetInputFormat
+import parquet.proto.{ProtoMessageParquetInputFormat, SettableProtoReadSupport}
 
 import scala.reflect.ClassTag
 

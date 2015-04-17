@@ -20,16 +20,14 @@ package parquet.proto;
 
 import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.spark.Logging;
 import parquet.io.api.RecordMaterializer;
+import parquet.proto.ProtoReadSupport;
 import parquet.schema.MessageType;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
-/**
- * @author Lukas Nalezenec
- */
 public class SettableProtoReadSupport<T extends Message> extends ProtoReadSupport<T> {
 
     public static void setProtoClass(Configuration configuration, String strProtoClass) {
