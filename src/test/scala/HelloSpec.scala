@@ -1,6 +1,5 @@
 import com.example.test.Example.Person
 import com.example.test.Example.Person.{PhoneNumber, PhoneNumberInner, PhoneNumberOuter}
-import com.google.common.primitives.Bytes
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -45,7 +44,7 @@ class HelloSpec extends FlatSpec with Matchers {
 
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
-    personsDF.agg(Map("id"->"max")).collect() should be === Array(Row(2))
+    personsDF.agg(Map("id" -> "max")).collect() should be === Array(Row(2))
 
     personsDF.rdd.map(_.getString(0)).collect.toList should be === List("Bob", "Alice")
 

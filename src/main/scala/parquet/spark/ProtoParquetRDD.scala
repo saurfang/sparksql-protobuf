@@ -6,19 +6,18 @@ import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.{NewHadoopRDD, RDD}
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import parquet.hadoop.ParquetInputFormat
 import parquet.proto.{ProtoMessageParquetInputFormat, SettableProtoReadSupport}
 
 import scala.reflect.ClassTag
 
 class ProtoParquetRDD[T <: AbstractMessage : ClassTag](
-                                           sc: SparkContext,
-                                           input: String,
-                                           protoClass: Class[T],
-                                           @transient conf: Configuration
-                                             ) extends RDD[T](sc, Nil){
+                                                        sc: SparkContext,
+                                                        input: String,
+                                                        protoClass: Class[T],
+                                                        @transient conf: Configuration
+                                                        ) extends RDD[T](sc, Nil) {
 
-  def this(sc: SparkContext,input: String,protoClass: Class[T]) = {
+  def this(sc: SparkContext, input: String, protoClass: Class[T]) = {
     this(sc, input, protoClass, sc.hadoopConfiguration)
   }
 

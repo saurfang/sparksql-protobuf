@@ -6,7 +6,7 @@ import parquet.hadoop.{ParquetInputFormat, ParquetRecordReader}
 
 class ProtoMessageParquetInputFormat[T <: GeneratedMessage] extends ParquetInputFormat[T](classOf[SettableProtoReadSupport[T]]) {
 
-  override def createRecordReader(inputSplit: InputSplit, taskAttemptContext: TaskAttemptContext) : RecordReader[Void, T] = {
+  override def createRecordReader(inputSplit: InputSplit, taskAttemptContext: TaskAttemptContext): RecordReader[Void, T] = {
     val reader = super.createRecordReader(inputSplit, taskAttemptContext).asInstanceOf[ParquetRecordReader[_ <: GeneratedMessage.Builder[_]]]
 
     new MessageRecordReader(reader)
