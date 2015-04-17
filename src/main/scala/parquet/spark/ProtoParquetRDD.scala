@@ -25,7 +25,6 @@ class ProtoParquetRDD[T <: AbstractMessage : ClassTag](
   lazy private[this] val rdd = {
     val jconf = new JobConf(conf)
     FileInputFormat.setInputPaths(jconf, input)
-    ParquetInputFormat.setReadSupportClass(jconf, classOf[SettableProtoReadSupport[T]])
     SettableProtoReadSupport.setProtoClass(jconf, protoClass.getName)
 
     new NewHadoopRDD(sc, classOf[ProtoMessageParquetInputFormat[T]], classOf[Void], protoClass, jconf)
