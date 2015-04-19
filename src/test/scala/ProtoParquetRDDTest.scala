@@ -1,12 +1,11 @@
-import com.example.test.Example.Person
-import com.example.test.Example.Person.{PhoneType, PhoneNumber, PhoneNumberInner, PhoneNumberOuter}
+import AddressBook.Person
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest._
 import parquet.spark.ProtoParquetRDD
 
-class HelloSpec extends FlatSpec with Matchers {
+class ProtoParquetRDDTest extends FlatSpec with Matchers {
   "Hello" should "have tests" in {
     val sc = new SparkContext(
       new SparkConf()
@@ -19,9 +18,10 @@ class HelloSpec extends FlatSpec with Matchers {
     val rawPersons = sc.parallelize(
       Seq(
         Row("Bob", 1, "bob@gmail.com",
-          Seq(Row("1234", PhoneType.HOME.toString), Row("2345", PhoneType.MOBILE.toString))
+          Seq(Row("1234", Person.PhoneType.HOME.toString), Row("2345", Person.PhoneType.MOBILE.toString)),
+          Seq()
         ),
-        Row("Alice", 2, "alice@outlook.com", Seq())
+        Row("Alice", 2, "alice@outlook.com", Seq(), Seq("NYC", "Seattle"))
       )
     )
 
@@ -39,7 +39,8 @@ class HelloSpec extends FlatSpec with Matchers {
               )
             )
           )
-        )
+        ),
+        StructField("address", ArrayType(StringType))
       )
     )
 
@@ -52,33 +53,25 @@ class HelloSpec extends FlatSpec with Matchers {
 
     personsDF.save("persons.parquet", SaveMode.Overwrite)
 
-    val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person])
+    val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person]).collect()
 
-    personsPB.collect().foreach(println)
-    personsPB.collect()(0) should be === Person.newBuilder()
+    personsPB.foreach(println)
+    personsPB(0) should ===(Person.newBuilder()
       .setEmail("bob@gmail.com")
       .setId(1)
       .setName("Bob")
-      .setPhone(
-        PhoneNumberOuter.newBuilder()
-          .addBag(
-            PhoneNumberInner.newBuilder()
-              .setArray(
-                PhoneNumber.newBuilder()
-                  .setNumber("1234")
-                  .setType(PhoneType.HOME)
-              )
-          )
-          .addBag(
-            PhoneNumberInner.newBuilder()
-              .setArray(
-                PhoneNumber.newBuilder()
-                  .setNumber("2345")
-                  .setType(PhoneType.MOBILE)
-              )
-          )
+      .addPhone(
+        Person.PhoneNumber.newBuilder()
+          .setNumber("1234")
+          .setType(Person.PhoneType.HOME)
       )
-      .build
+      .addPhone(
+        Person.PhoneNumber.newBuilder()
+          .setNumber("2345")
+          .setType(Person.PhoneType.MOBILE)
+      )
+      .build)
 
+    personsPB(1).getAddressList.toArray(Array.empty[String]) should ===(Array("NYC", "Seattle"))
   }
 }
