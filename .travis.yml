@@ -1,3 +1,6 @@
+env:
+  - PROTOBUF_VERSION=2.5.0
+  - PATH=/home/travis/bin:$PATH
 language: scala
 scala:
   - 2.10.5
@@ -5,6 +8,8 @@ jdk:
   - openjdk7
   - openjdk6
 sudo: false
+before_install:
+  - ./install-protobuf.sh
 script:
   - sbt -jvm-opts travis/jvmopts.compile compile
   - sbt -jvm-opts travis/jvmopts.test test
