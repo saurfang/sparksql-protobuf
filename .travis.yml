@@ -1,6 +1,5 @@
 env:
-  - PROTOBUF_VERSION=2.5.0
-  - PATH=/home/travis/bin:$PATH
+  - PROTOBUF_VERSION=2.5.0 PATH=/home/travis/bin:$PATH
 language: scala
 scala:
   - 2.10.5
