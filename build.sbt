@@ -20,3 +20,9 @@ libraryDependencies ++= Seq(
   "junit" % "junit" % "4.12" % "test",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
+
+sourceDirectory in PB.protobufConfig := new File("src/test/protobuf")
+
+javaSource in PB.protobufConfig <<= (sourceDirectory in Test)(_ / "generated")
+
+unmanagedSourceDirectories in Test += baseDirectory.value / "generated"

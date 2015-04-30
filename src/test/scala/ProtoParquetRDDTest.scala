@@ -1,20 +1,29 @@
 import AddressBook.Person
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{Logging, SparkConf, SparkContext}
 import org.scalatest._
 import parquet.spark.ProtoParquetRDD
 
-class ProtoParquetRDDTest extends FlatSpec with Matchers {
-  "Hello" should "have tests" in {
-    val sc = new SparkContext(
+class ProtoParquetRDDTest extends FlatSpec with Matchers with BeforeAndAfterAll with Logging{
+  private var sc: SparkContext = _
+  private var sqlContext: SQLContext = _
+
+  override def beforeAll() = {
+    sc = new SparkContext(
       new SparkConf()
         .setMaster("local")
         .setAppName("sparksql-protobuf")
     )
 
-    val sqlContext = new SQLContext(sc)
+    sqlContext = new SQLContext(sc)
+  }
 
+  override def afterAll() = {
+    sc.stop()
+  }
+
+  it should "read parquet data as protobuf object" in {
     val rawPersons = sc.parallelize(
       Seq(
         Row("Bob", 1, "bob@gmail.com",
@@ -44,18 +53,17 @@ class ProtoParquetRDDTest extends FlatSpec with Matchers {
       )
     )
 
-
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
     personsDF.agg(Map("id" -> "max")).collect() should be === Array(Row(2))
-
     personsDF.rdd.map(_.getString(0)).collect.toList should be === List("Bob", "Alice")
 
     personsDF.save("persons.parquet", SaveMode.Overwrite)
 
-    val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person]).collect()
 
-    personsPB.foreach(println)
+    val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person]).collect()
+    personsPB.foreach(p => logInfo(p.toString))
+
     personsPB(0) should ===(Person.newBuilder()
       .setEmail("bob@gmail.com")
       .setId(1)
