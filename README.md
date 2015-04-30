@@ -2,6 +2,8 @@
 
 This library provides a way to read parquet file written by SparkSQL back as an RDD of compatible protobuf object.
 
+[![Build Status](https://travis-ci.org/saurfang/sparksql-protobuf.svg?branch=master)](https://travis-ci.org/saurfang/sparksql-protobuf)
+
 ## Motivation
 
 SparkSQL is very powerful and easy to use. However it has a few limitations and schema is only detected during runtime
