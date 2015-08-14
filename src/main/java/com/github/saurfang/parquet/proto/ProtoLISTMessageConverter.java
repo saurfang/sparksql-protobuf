@@ -16,21 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package parquet.proto;
+package com.github.saurfang.parquet.proto;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.twitter.elephantbird.util.Protobufs;
-import parquet.column.Dictionary;
-import parquet.io.InvalidRecordException;
-import parquet.io.api.Binary;
-import parquet.io.api.Converter;
-import parquet.io.api.GroupConverter;
-import parquet.io.api.PrimitiveConverter;
-import parquet.schema.GroupType;
-import parquet.schema.IncompatibleSchemaModificationException;
-import parquet.schema.Type;
+import org.apache.parquet.column.Dictionary;
+import org.apache.parquet.io.InvalidRecordException;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.io.api.Converter;
+import org.apache.parquet.io.api.GroupConverter;
+import org.apache.parquet.io.api.PrimitiveConverter;
+import org.apache.parquet.proto.ProtoWriteSupport;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.IncompatibleSchemaModificationException;
+import org.apache.parquet.schema.Type;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,25 +42,28 @@ import static com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 
 /**
  * Converts Protocol Buffer message (both top level and inner) to parquet.
- * This is internal class, use {@link ProtoRecordConverter}.
+ * This is internal class, use {@link ProtoLISTRecordConverter}.
+ *
+ * Added {@link ProtoListConverter} to read nested parquet written by SparkSQL
  *
  * @see {@link ProtoWriteSupport}
  * @author Lukas Nalezenec
+ * @author Forest Fang
  */
-class ProtoMessageConverter extends GroupConverter {
+class ProtoLISTMessageConverter extends GroupConverter {
 
     private final Converter[] converters;
     private final ParentValueContainer parent;
     private final Message.Builder myBuilder;
 
     // used in record converter
-    ProtoMessageConverter(ParentValueContainer pvc, Class<? extends Message> protoClass, GroupType parquetSchema) {
+    ProtoLISTMessageConverter(ParentValueContainer pvc, Class<? extends Message> protoClass, GroupType parquetSchema) {
         this(pvc, Protobufs.getMessageBuilder(protoClass), parquetSchema);
     }
 
 
     // For usage in message arrays
-    ProtoMessageConverter(ParentValueContainer pvc, Message.Builder builder, GroupType parquetSchema) {
+    ProtoLISTMessageConverter(ParentValueContainer pvc, Message.Builder builder, GroupType parquetSchema) {
 
         int schemaSize = parquetSchema.getFieldCount();
         converters = new Converter[schemaSize];
@@ -153,7 +157,7 @@ class ProtoMessageConverter extends GroupConverter {
             case LONG: return new ProtoLongConverter(pvc);
             case MESSAGE: {
                 Message.Builder subBuilder = parentBuilder.newBuilderForField(fieldDescriptor);
-                return new ProtoMessageConverter(pvc, subBuilder, parquetType.asGroupType());
+                return new ProtoLISTMessageConverter(pvc, subBuilder, parquetType.asGroupType());
             }
         }
 
@@ -206,7 +210,7 @@ class ProtoMessageConverter extends GroupConverter {
 
         /**
          * Translates given parquet enum value to protocol buffer enum value.
-         * @throws parquet.io.InvalidRecordException is there is no corresponding value.
+         * @throws org.apache.parquet.io.InvalidRecordException is there is no corresponding value.
          * */
         private Descriptors.EnumValueDescriptor translateEnumValue(Binary binaryValue) {
             Descriptors.EnumValueDescriptor protoValue = enumLookup.get(binaryValue);
@@ -354,16 +358,16 @@ class ProtoMessageConverter extends GroupConverter {
     final class ProtoListConverter extends GroupConverter {
         private final Converter converter;
 
-        ProtoListConverter(ParentValueContainer pvc, Message.Builder builder, Descriptors.FieldDescriptor fieldDescriptor, GroupType parquetSchema) {
-            if (pvc == null) {
+        ProtoListConverter(ParentValueContainer parent, Message.Builder builder, Descriptors.FieldDescriptor fieldDescriptor, GroupType parquetSchema) {
+            if (parent == null) {
                 throw new IllegalStateException("Missing parent value container");
             }
 
             Type childSchema = parquetSchema.getFields().get(0);
             if(parquetSchema.isRepetition(Type.Repetition.REPEATED)) {
-                converter = newScalarConverter(pvc, builder, fieldDescriptor, childSchema);
+                converter = newScalarConverter(parent, builder, fieldDescriptor, childSchema);
             } else {
-                converter = new ProtoListConverter(pvc, builder, fieldDescriptor, childSchema.asGroupType());
+                converter = new ProtoListConverter(parent, builder, fieldDescriptor, childSchema.asGroupType());
             }
         }
 

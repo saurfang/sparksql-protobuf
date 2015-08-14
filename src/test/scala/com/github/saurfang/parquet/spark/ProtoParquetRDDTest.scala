@@ -1,9 +1,10 @@
-import AddressBook.Person
+package com.github.saurfang.parquet.spark
+
+import com.github.saurfang.parquet.proto.AddressBook._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{Logging, SparkConf, SparkContext}
 import org.scalatest._
-import parquet.spark.ProtoParquetRDD
 
 class ProtoParquetRDDTest extends FlatSpec with Matchers with BeforeAndAfterAll with Logging{
   private var sc: SparkContext = _
@@ -55,8 +56,8 @@ class ProtoParquetRDDTest extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
-    personsDF.agg(Map("id" -> "max")).collect() should be === Array(Row(2))
-    personsDF.rdd.map(_.getString(0)).collect.toList should be === List("Bob", "Alice")
+    personsDF.agg(Map("id" -> "max")).collect() shouldBe Array(Row(2))
+    personsDF.rdd.map(_.getString(0)).collect().toList shouldBe List("Bob", "Alice")
 
     personsDF.save("persons.parquet", SaveMode.Overwrite)
 
@@ -80,6 +81,6 @@ class ProtoParquetRDDTest extends FlatSpec with Matchers with BeforeAndAfterAll 
       )
       .build)
 
-    personsPB(1).getAddressList.toArray(Array.empty[String]) should ===(Array("NYC", "Seattle"))
+    personsPB(1).getAddressList.toArray(Array.empty[String]) shouldBe Array("NYC", "Seattle")
   }
 }

@@ -1,12 +1,13 @@
-package parquet.spark
+package com.github.saurfang.parquet.spark
 
+import com.github.saurfang.parquet.proto.ProtoMessageParquetInputFormat
 import com.google.protobuf.AbstractMessage
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
+import org.apache.parquet.proto.ProtoReadSupport
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.{NewHadoopRDD, RDD}
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import parquet.proto.{ProtoMessageParquetInputFormat, SettableProtoReadSupport}
 
 import scala.reflect.ClassTag
 
@@ -24,7 +25,7 @@ class ProtoParquetRDD[T <: AbstractMessage : ClassTag](
   lazy private[this] val rdd = {
     val jconf = new JobConf(conf)
     FileInputFormat.setInputPaths(jconf, input)
-    SettableProtoReadSupport.setProtoClass(jconf, protoClass.getName)
+    ProtoReadSupport.setProtobufClass(jconf, protoClass.getName)
 
     new NewHadoopRDD(sc, classOf[ProtoMessageParquetInputFormat[T]], classOf[Void], protoClass, jconf)
   }

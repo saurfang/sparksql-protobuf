@@ -1,10 +1,10 @@
-package parquet.proto
+package com.github.saurfang.parquet.proto
 
 import com.google.protobuf.GeneratedMessage
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
-import parquet.hadoop.{ParquetInputFormat, ParquetRecordReader}
+import org.apache.parquet.hadoop.{ParquetInputFormat, ParquetRecordReader}
 
-class ProtoMessageParquetInputFormat[T <: GeneratedMessage] extends ParquetInputFormat[T](classOf[SettableProtoReadSupport[T]]) {
+class ProtoMessageParquetInputFormat[T <: GeneratedMessage] extends ParquetInputFormat[T](classOf[ProtoLISTReadSupport[T]]) {
 
   override def createRecordReader(inputSplit: InputSplit, taskAttemptContext: TaskAttemptContext): RecordReader[Void, T] = {
     val reader = super.createRecordReader(inputSplit, taskAttemptContext).asInstanceOf[ParquetRecordReader[_ <: GeneratedMessage.Builder[_]]]
