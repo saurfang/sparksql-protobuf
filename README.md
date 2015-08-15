@@ -49,7 +49,7 @@ import com.github.saurfang.parquet.proto.spark.sql._
 val personsDF = sqlContext.createDataFrame(protoPersons)
 ```
 
-*For more information, please see test cases for illustration.*
+*For more information, please see test cases.*
 
 ## Related Work
 [Elephant Bird](https://github.com/twitter/elephant-bird)
