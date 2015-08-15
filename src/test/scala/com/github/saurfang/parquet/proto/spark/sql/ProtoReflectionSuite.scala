@@ -60,4 +60,8 @@ class ProtoReflectionSuite extends FunSuite with Matchers {
         nullable = true
       )
   }
+
+  test("SchemaFor should fail for other types") {
+    intercept[UnsupportedOperationException](schemaFor[StructField])
+  }
 }
