@@ -24,3 +24,5 @@ sourceDirectory in PB.protobufConfig := new File("src/test/protobuf")
 javaSource in PB.protobufConfig <<= (sourceDirectory in Test)(_ / "generated")
 
 unmanagedSourceDirectories in Test += baseDirectory.value / "generated"
+
+parallelExecution in Test := false

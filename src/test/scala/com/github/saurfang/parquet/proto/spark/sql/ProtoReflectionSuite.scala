@@ -6,7 +6,7 @@ import org.apache.spark.sql.types._
 import org.scalatest.{Matchers, FunSuite}
 import ProtoReflection._
 
-class ProtoReflectionTest extends FunSuite with Matchers {
+class ProtoReflectionSuite extends FunSuite with Matchers {
 
   test("ProtoReflection should derive correct simple type") {
     schemaFor[SimpleMessage] shouldBe

@@ -18,7 +18,7 @@
 package com.github.saurfang.parquet.proto.spark.sql
 
 import com.google.protobuf.Descriptors.{Descriptor, FieldDescriptor}
-import com.google.protobuf.MessageOrBuilder
+import com.google.protobuf.{AbstractMessage}
 import org.apache.spark.sql.types._
 
 /**
@@ -69,8 +69,8 @@ trait ProtoReflection {
   /** Returns a catalyst DataType and its nullability for the given Scala Type using reflection. */
   def schemaFor(tpe: `Type`): Schema = ScalaReflectionLock.synchronized {
     tpe match {
-      case t if t <:< localTypeOf[MessageOrBuilder] =>
-        val clazz = mirror.runtimeClass(t).asInstanceOf[Class[MessageOrBuilder]]
+      case t if t <:< localTypeOf[AbstractMessage] =>
+        val clazz = mirror.runtimeClass(t).asInstanceOf[Class[AbstractMessage]]
         val descriptor = clazz.getMethod("getDescriptor").invoke(null).asInstanceOf[Descriptor]
 
         import collection.JavaConversions._
