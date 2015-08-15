@@ -24,4 +24,4 @@ unmanagedSourceDirectories in Test += baseDirectory.value / "generated"
 
 parallelExecution in Test := false
 
-coverageExcludedPackages := ".*ProtoLIST.*"
+ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := ".*ProtoLIST.*"
