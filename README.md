@@ -1,6 +1,8 @@
 # sparksql-protobuf
 
-This library provides a way to read parquet file written by SparkSQL back as an RDD of compatible protobuf object.
+This library provides utilities to work with Protobuf objects in SparkSQL.
+It provides a way to read parquet file written by SparkSQL back as an RDD of compatible protobuf object.
+It can also converts RDD of protobuf objects into DataFrame.
 
 [![Build Status](https://travis-ci.org/saurfang/sparksql-protobuf.svg?branch=master)](https://travis-ci.org/saurfang/sparksql-protobuf)
 
