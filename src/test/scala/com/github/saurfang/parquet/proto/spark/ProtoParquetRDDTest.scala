@@ -1,6 +1,7 @@
-package com.github.saurfang.parquet.spark
+package com.github.saurfang.parquet.proto.spark
 
 import com.github.saurfang.parquet.proto.AddressBook._
+import com.github.saurfang.parquet.proto.spark.sql.ProtoReflection
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext, SaveMode}
 import org.apache.spark.{Logging, SparkConf, SparkContext}
@@ -35,24 +36,7 @@ class ProtoParquetRDDTest extends FlatSpec with Matchers with BeforeAndAfterAll 
       )
     )
 
-    val personSchema = StructType(
-      Seq(
-        StructField("name", StringType),
-        StructField("id", IntegerType),
-        StructField("email", StringType),
-        StructField("phone",
-          ArrayType(
-            StructType(
-              Seq(
-                StructField("number", StringType),
-                StructField("type", StringType)
-              )
-            )
-          )
-        ),
-        StructField("address", ArrayType(StringType))
-      )
-    )
+    val personSchema = ProtoReflection.schemaFor[Person].dataType.asInstanceOf[StructType]
 
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 

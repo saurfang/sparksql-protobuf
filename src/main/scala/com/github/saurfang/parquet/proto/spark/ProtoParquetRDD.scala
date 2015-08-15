@@ -1,4 +1,4 @@
-package com.github.saurfang.parquet.spark
+package com.github.saurfang.parquet.proto.spark
 
 import com.github.saurfang.parquet.proto.ProtoMessageParquetInputFormat
 import com.google.protobuf.AbstractMessage
