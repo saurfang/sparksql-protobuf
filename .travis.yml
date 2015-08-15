@@ -11,6 +11,7 @@ sudo: false
 before_install:
   - ./install-protobuf.sh
 script:
-  - sbt -jvm-opts travis/jvmopts.compile compile
-  - sbt -jvm-opts travis/jvmopts.test test
+  - sbt -jvm-opts travis/jvmopts.test clean coverage test
   - sbt -jvm-opts travis/jvmopts.test scalastyle
+after_success:
+  - sbt coveralls

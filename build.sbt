@@ -1,7 +1,5 @@
 import sbtprotobuf.{ProtobufPlugin=>PB}
 
-Seq(PB.protobufSettings: _*)
-
 name := """sparksql-protobuf"""
 
 version := "1.0"
@@ -19,10 +17,11 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
 
+Seq(PB.protobufSettings: _*)
 sourceDirectory in PB.protobufConfig := new File("src/test/protobuf")
-
 javaSource in PB.protobufConfig <<= (sourceDirectory in Test)(_ / "generated")
-
 unmanagedSourceDirectories in Test += baseDirectory.value / "generated"
 
 parallelExecution in Test := false
+
+coverageExcludedPackages := ".*ProtoLIST.*"
