@@ -9,7 +9,8 @@ crossScalaVersions := Seq("2.10.5", "2.11.6")
 scalacOptions ++= Seq("-target:jvm-1.7" )
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
-version := "0.1.0"
+enablePlugins(GitVersioning)
+git.baseVersion := "0.1.1"
 
 resolvers ++= Seq(
   "Twitter Maven" at "http://maven.twttr.com"
