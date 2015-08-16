@@ -28,7 +28,7 @@ unmanagedSourceDirectories in Test += baseDirectory.value / "generated"
 
 parallelExecution in Test := false
 
-ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := ".*ProtoLIST.*"
+coverageExcludedPackages := ".*ProtoLIST.*"
 
 spName := "saurfang/sparksql-protobuf"
 sparkVersion := "1.3.0"

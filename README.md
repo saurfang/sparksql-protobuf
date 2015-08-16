@@ -5,7 +5,7 @@ It provides a way to read parquet file written by SparkSQL back as an RDD of com
 It can also converts RDD of protobuf objects into DataFrame.
 
 [![Build Status](https://travis-ci.org/saurfang/sparksql-protobuf.svg?branch=master)](https://travis-ci.org/saurfang/sparksql-protobuf)
-[![Coverage Status](https://coveralls.io/repos/saurfang/sparksql-protobuf/badge.svg?branch=master&service=github)](https://coveralls.io/github/saurfang/sparksql-protobuf?branch=master)
+[![codecov.io](https://codecov.io/github/saurfang/sparksql-protobuf/coverage.svg?branch=master)](https://codecov.io/github/saurfang/sparksql-protobuf?branch=master)
 
 ## Motivation
 
