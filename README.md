@@ -13,7 +13,7 @@ For sbt 0.13.6+
 resolvers += Resolver.jcenterRepo
 
 libraryDependencies ++= Seq(
-    "com.github.saurfang" % "sparksql-protobuf" % "0.1.2",
+    "com.github.saurfang" %% "sparksql-protobuf" % "0.1.2",
     "org.apache.parquet" % "parquet-protobuf" % "1.7.0"
 )
 ```
