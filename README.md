@@ -7,6 +7,21 @@ It can also converts RDD of protobuf objects into DataFrame.
 [![Build Status](https://travis-ci.org/saurfang/sparksql-protobuf.svg?branch=master)](https://travis-ci.org/saurfang/sparksql-protobuf)
 [![codecov.io](https://codecov.io/github/saurfang/sparksql-protobuf/coverage.svg?branch=master)](https://codecov.io/github/saurfang/sparksql-protobuf?branch=master)
 
+For sbt 0.13.6+
+
+```scala
+resolvers += Resolver.jcenterRepo
+
+libraryDependencies ++= Seq(
+    "com.github.saurfang" % "sparksql-protobuf" % "0.1.2",
+    "org.apache.parquet" % "parquet-protobuf" % "1.7.0"
+)
+```
+
+Note you might want to change `parquet-protobuf` depends on what version of Spark you're using. Spark 1.4 and prior uses
+`parquet` under `com.twitter` thus causes no conflict and you can pick whichever version you prefer. Spark 1.5 is scheduled
+to use `"org.apache.parquet" % "parquet-protobuf" % "1.7.0"` so you will probably want to be consistent.
+
 ## Motivation
 
 SparkSQL is very powerful and easy to use. However it has a few limitations and schema is only detected during runtime
