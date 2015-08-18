@@ -17,15 +17,22 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
 
   // person specified as rows
   val personRows: Seq[Row] = Seq(
+    Row("Alice", 0, "alice@outlook.com", Seq(), Seq("NYC", "Seattle")),
     Row("Bob", 1, "bob@gmail.com",
       Seq(Row("1234", Person.PhoneType.HOME.toString), Row("2345", Person.PhoneType.MOBILE.toString)),
       Seq()
-    ),
-    Row("Alice", 2, "alice@outlook.com", Seq(), Seq("NYC", "Seattle"))
+    )
   )
 
   // person psecified as protobuf message
   val personMessages: Seq[Person] = Seq(
+    Person.newBuilder()
+      .setEmail("alice@outlook.com")
+      .setId(0)
+      .setName("Alice")
+      .addAddress("NYC")
+      .addAddress("Seattle")
+      .build(),
     Person.newBuilder()
       .setEmail("bob@gmail.com")
       .setId(1)
@@ -40,14 +47,7 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
           .setNumber("2345")
           .setType(Person.PhoneType.MOBILE)
       )
-      .build,
-    Person.newBuilder()
-      .setEmail("alice@outlook.com")
-      .setId(2)
-      .setName("Alice")
-      .addAddress("NYC")
-      .addAddress("Seattle")
-      .build()
+      .build
   )
 
   test("read parquet data as protobuf objects") {
@@ -63,8 +63,8 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
     val personsDF = sqlContext.createDataFrame(rawPersons, personSchema)
 
     // quick checks
-    personsDF.agg(Map("id" -> "max")).collect() shouldBe Array(Row(2))
-    personsDF.rdd.map(_.getString(0)).collect().toList shouldBe List("Bob", "Alice")
+    personsDF.agg(Map("id" -> "max")).collect() shouldBe Array(Row(1))
+    personsDF.rdd.map(_.getString(0)).collect().sorted shouldBe Array("Alice", "Bob")
 
     // save as parquet file
     personsDF.save("persons.parquet", SaveMode.Overwrite)
@@ -75,7 +75,7 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
 
     // Make sure all information about Bob and Alice are still intact
     // this includes both simple repeated field and message repeated field
-    personsPB shouldBe personMessages
+    personsPB.sortBy(_.getName) shouldBe personMessages
   }
 
   test("write protobuf object as parquet") {
@@ -94,7 +94,7 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
     personsDF.save("persons.parquet", SaveMode.Overwrite)
 
     // read parquet file back and check the results
-    sqlContext.parquetFile("persons.parquet").collect() shouldBe personRows
+    sqlContext.parquetFile("persons.parquet").collect().sortBy(_.getString(0)) shouldBe personRows
   }
 
   test("convert to df using Class[_]") {
@@ -111,6 +111,6 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
       Class.forName("com.github.saurfang.parquet.proto.AddressBook$Person").asInstanceOf[Class[AbstractMessage]]
     )
 
-    personsDF.collect shouldBe personsDF2.collect
+    personsDF.collect().sortBy(_.getString(0)) shouldBe personsDF2.collect().sortBy(_.getString(0))
   }
 }
