@@ -30,5 +30,22 @@ package object sql {
       val rowRDD = rdd.map(ProtoRDDConversions.messageToRow)
       sqlContext.createDataFrame(rowRDD, schema)
     }
+
+
+    /**
+     * :: Experimental ::
+     * Creates a DataFrame from an RDD of protobuf messages.
+     *
+     * Have to use a different name because the implicit doesn't trigger
+     * due to existing method that works on Java bean.
+     *
+     * @group dataframes
+     */
+    @Experimental
+    def createDataFrameFromProto(rdd: RDD[_ <: AbstractMessage], clazz: Class[_ <: AbstractMessage]): DataFrame = {
+      val schema = ProtoReflection.schemaFor(clazz).dataType.asInstanceOf[StructType]
+      val rowRDD = rdd.map(ProtoRDDConversions.messageToRow)
+      sqlContext.createDataFrame(rowRDD, schema)
+    }
   }
 }

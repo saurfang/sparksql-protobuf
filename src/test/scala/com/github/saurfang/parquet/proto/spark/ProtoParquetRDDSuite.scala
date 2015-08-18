@@ -2,16 +2,18 @@ package com.github.saurfang.parquet.proto.spark
 
 import com.github.saurfang.parquet.proto.AddressBook._
 import com.github.saurfang.parquet.proto.spark.sql.ProtoReflection
+import com.google.protobuf.AbstractMessage
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
-import org.apache.spark.{LocalSparkContext, Logging, SparkConf, SparkContext}
+import org.apache.spark._
 import org.scalatest._
 
 /**
  * We demonstrate that we have the ability to convert RDD[Protobuf] as dataframe.
  * We can also do the reverse: read parquet file back as RDD[Protobuf].
  */
-class ProtoParquetRDDSuite extends FunSuite with Matchers with LocalSparkContext with Logging{
+class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContext with Logging{
 
   // person specified as rows
   val personRows: Seq[Row] = Seq(
@@ -49,7 +51,6 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with LocalSparkContext
   )
 
   test("read parquet data as protobuf objects") {
-    sc = new SparkContext(new SparkConf().setMaster("local").setAppName("sparksql-protobuf"))
     val sqlContext = new SQLContext(sc)
 
     // create RDD[Row] that contains person data
@@ -78,7 +79,6 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with LocalSparkContext
   }
 
   test("write protobuf object as parquet") {
-    sc = new SparkContext(new SparkConf().setMaster("local").setAppName("sparksql-protobuf"))
     val sqlContext = new SQLContext(sc)
 
     // create RDD[Person] that contains person data
@@ -95,5 +95,22 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with LocalSparkContext
 
     // read parquet file back and check the results
     sqlContext.parquetFile("persons.parquet").collect() shouldBe personRows
+  }
+
+  test("convert to df using Class[_]") {
+    val sqlContext = new SQLContext(sc)
+
+    // create RDD[Person] that contains person data
+    val protoPersons = sc.parallelize(personMessages)
+
+    // convert person to DataFrame
+    import com.github.saurfang.parquet.proto.spark.sql._
+    val personsDF = sqlContext.createDataFrame(protoPersons)
+    val personsDF2 = sqlContext.createDataFrameFromProto(
+      protoPersons,
+      Class.forName("com.github.saurfang.parquet.proto.AddressBook$Person").asInstanceOf[Class[AbstractMessage]]
+    )
+
+    personsDF.collect shouldBe personsDF2.collect
   }
 }

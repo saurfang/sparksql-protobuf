@@ -64,4 +64,8 @@ class ProtoReflectionSuite extends FunSuite with Matchers {
   test("SchemaFor should fail for other types") {
     intercept[UnsupportedOperationException](schemaFor[StructField])
   }
+
+  test("SchemaFor should work for Class[_] as well as for type") {
+    schemaFor(classOf[Person]) shouldBe schemaFor[Person]
+  }
 }

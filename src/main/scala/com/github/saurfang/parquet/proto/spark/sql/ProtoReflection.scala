@@ -22,31 +22,25 @@ import com.google.protobuf.{AbstractMessage}
 import org.apache.spark.sql.types._
 
 /**
- * A default version of ScalaReflection that uses the runtime universe.
+ * Support for generating catalyst schemas for protobuf objects.
  */
-object ProtoReflection extends ProtoReflection {
-  val universe: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
-
-  // Since we are creating a runtime mirror usign the class loader of current thread,
-  // we need to use def at here. So, every time we call mirror, it is using the
-  // class loader of the current thread.
-  override def mirror: universe.RuntimeMirror =
-    universe.runtimeMirror(Thread.currentThread().getContextClassLoader)
-}
-
-/**
- * Support for generating catalyst schemas for scala objects.
- */
-trait ProtoReflection {
-  /** The universe we work in (runtime or macro) */
-  val universe: scala.reflect.api.Universe
+object ProtoReflection {
+  /** The universe we work in runtime */
+  val universe = scala.reflect.runtime.universe
 
   /** The mirror used to access types in the universe */
-  def mirror: universe.RuntimeMirror
+  def mirror = universe.runtimeMirror(Thread.currentThread().getContextClassLoader)
 
   import universe._
 
   case class Schema(dataType: DataType, nullable: Boolean)
+
+  /** Returns a catalyst DataType and its nullability for the given Scala Type using reflection. */
+  def schemaFor[T <: AbstractMessage](clazz: Class[T]): Schema = {
+    ScalaReflectionLock.synchronized {
+      schemaFor(mirror.classSymbol(clazz).toType)
+    }
+  }
 
   /** Returns a catalyst DataType and its nullability for the given Scala Type using reflection. */
   def schemaFor[T: TypeTag]: Schema =
