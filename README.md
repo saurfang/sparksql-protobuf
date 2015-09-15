@@ -14,13 +14,9 @@ resolvers += Resolver.jcenterRepo
 
 libraryDependencies ++= Seq(
     "com.github.saurfang" %% "sparksql-protobuf" % "0.1.2",
-    "org.apache.parquet" % "parquet-protobuf" % "1.7.0"
+    "org.apache.parquet" % "parquet-protobuf" % "1.8.1"
 )
 ```
-
-Note you might want to change `parquet-protobuf` depends on what version of Spark you're using. Spark 1.4 and prior uses
-`parquet` under `com.twitter` thus causes no conflict and you can pick whichever version you prefer. Spark 1.5 is scheduled
-to use `"org.apache.parquet" % "parquet-hadoop" % "1.7.0"` so you will probably want to be consistent.
 
 ## Motivation
 
