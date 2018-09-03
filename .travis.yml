@@ -2,11 +2,9 @@ env:
   - PROTOBUF_VERSION=2.5.0 PATH=/home/travis/bin:$PATH
 language: scala
 scala:
-  - 2.10.5
+  - 2.11.6
 jdk:
   - oraclejdk8
-  - oraclejdk7
-  - openjdk7
 sudo: false
 before_install:
   - ./install-protobuf.sh

@@ -13,7 +13,7 @@ import org.scalatest._
  * We demonstrate that we have the ability to convert RDD[Protobuf] as dataframe.
  * We can also do the reverse: read parquet file back as RDD[Protobuf].
  */
-class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContext with Logging{
+class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContext {
 
   // person specified as rows
   val personRows: Seq[Row] = Seq(
@@ -67,11 +67,11 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
     personsDF.rdd.map(_.getString(0)).collect().sorted shouldBe Array("Alice", "Bob")
 
     // save as parquet file
-    personsDF.save("persons.parquet", SaveMode.Overwrite)
+    personsDF.write.mode(SaveMode.Overwrite).save("persons.parquet")
 
     // read parquet file back but as RDD[Person] instead
     val personsPB = new ProtoParquetRDD(sc, "persons.parquet", classOf[Person]).collect()
-    personsPB.foreach(p => logInfo(p.toString))
+    personsPB.foreach(p => println(p.toString))
 
     // Make sure all information about Bob and Alice are still intact
     // this includes both simple repeated field and message repeated field
@@ -91,7 +91,7 @@ class ProtoParquetRDDSuite extends FunSuite with Matchers with SharedSparkContex
     personsDF.show()
 
     // save as parquet file
-    personsDF.save("persons.parquet", SaveMode.Overwrite)
+    personsDF.write.mode(SaveMode.Overwrite).save("persons.parquet")
 
     // read parquet file back and check the results
     sqlContext.parquetFile("persons.parquet").collect().sortBy(_.getString(0)) shouldBe personRows
