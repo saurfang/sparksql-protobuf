@@ -3,3 +3,4 @@ atlassian-ide-plugin.xml
 **/target
 *.parquet
 src/test/generated
+*.iml
