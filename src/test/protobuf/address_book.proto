@@ -19,4 +19,8 @@ message Person {
     repeated PhoneNumber phone = 4;
 
     repeated string address = 5;
+
+    message EmptyMessage {}
+
+    optional EmptyMessage empty = 6;
 }
