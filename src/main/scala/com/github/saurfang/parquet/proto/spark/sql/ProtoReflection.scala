@@ -68,31 +68,33 @@ object ProtoReflection {
         val descriptor = clazz.getMethod("getDescriptor").invoke(null).asInstanceOf[Descriptor]
 
         import collection.JavaConversions._
-        Schema(StructType(descriptor.getFields.map(structFieldFor).toSeq), nullable = true)
+        Schema(StructType(descriptor.getFields.flatMap(structFieldFor).toSeq), nullable = true)
       case other =>
         throw new UnsupportedOperationException(s"Schema for type $other is not supported")
     }
   }
 
-  private def structFieldFor(fd: FieldDescriptor): StructField = {
+  private def structFieldFor(fd: FieldDescriptor): Option[StructField] = {
     import com.google.protobuf.Descriptors.FieldDescriptor.JavaType._
     val dataType = fd.getJavaType match {
-      case INT => IntegerType
-      case LONG => LongType
-      case FLOAT => FloatType
-      case DOUBLE => DoubleType
-      case BOOLEAN => BooleanType
-      case STRING => StringType
-      case BYTE_STRING => BinaryType
-      case ENUM => StringType
+      case INT => Some(IntegerType)
+      case LONG => Some(LongType)
+      case FLOAT => Some(FloatType)
+      case DOUBLE => Some(DoubleType)
+      case BOOLEAN => Some(BooleanType)
+      case STRING => Some(StringType)
+      case BYTE_STRING => Some(BinaryType)
+      case ENUM => Some(StringType)
       case MESSAGE =>
         import collection.JavaConversions._
-        StructType(fd.getMessageType.getFields.map(structFieldFor).toSeq)
+        Option(fd.getMessageType.getFields.flatMap(structFieldFor))
+          .filter(_.nonEmpty)
+          .map(StructType.apply)
     }
-    StructField(
+    dataType.map( dt => StructField(
       fd.getName,
-      if (fd.isRepeated) ArrayType(dataType, containsNull = false) else dataType,
+      if (fd.isRepeated) ArrayType(dt, containsNull = false) else dt,
       nullable = !fd.isRequired && !fd.isRepeated
-    )
+    ))
   }
 }

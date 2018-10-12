@@ -1,12 +1,12 @@
 package com.github.saurfang.parquet.proto.spark.sql
 
 import com.github.saurfang.parquet.proto.AddressBook.Person
-import com.github.saurfang.parquet.proto.AddressBook.Person.PhoneNumber
+import com.github.saurfang.parquet.proto.AddressBook.Person.{EmptyMessage, PhoneNumber}
 import com.github.saurfang.parquet.proto.Simple.SimpleMessage
 import com.google.protobuf.ByteString
-import org.apache.spark.{SparkConf, SparkContext, LocalSparkContext}
+import org.apache.spark.{LocalSparkContext, SparkConf, SparkContext}
 import org.apache.spark.sql.{Row, SQLContext}
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{FunSuite, Matchers}
 import ProtoRDDConversions._
 
 class ProtoRDDConversionSuite extends FunSuite with Matchers {
@@ -69,12 +69,12 @@ class ProtoRDDConversionSuite extends FunSuite with Matchers {
         .addPhone(PhoneNumber.newBuilder().setNumber("12345").setType(Person.PhoneType.MOBILE))
         .build
     val protoRow = messageToRow(protoMessage)
-    protoRow shouldBe Row("test", 0, null, Seq(Row("12345", "MOBILE")), Seq("ABC", "CDE"))
+    protoRow shouldBe Row("test", 0, null, Seq(Row("12345", "MOBILE")), Seq("ABC", "CDE"), null)
   }
 
   test("convert protobuf with empty repeated fields") {
     val protoMessage = Person.newBuilder().setName("test").setId(0).build()
     val protoRow = messageToRow(protoMessage)
-    protoRow shouldBe Row("test", 0, null, Seq(), Seq())
+    protoRow shouldBe Row("test", 0, null, Seq(), Seq(), null)
   }
 }
